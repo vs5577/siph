@@ -7,103 +7,90 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getDatabase, ref, set, get, push, update, remove, onValue }
+            from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCkgk1X53dNf2xnf9BsfnfHGPWAaiTLxl8",
+            authDomain: "siph-9c695.firebaseapp.com",
+            databaseURL: "https://siph-9c695-default-rtdb.firebaseio.com",
+            projectId: "siph-9c695",
+            storageBucket: "siph-9c695.firebasestorage.app",
+            messagingSenderId: "503440435465",
+            appId: "1:503440435465:web:c74ef24d26e0f25ce04bd8",
+            measurementId: "G-PGDMTDFY33"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db  = getDatabase(app);
+
+        window._fb = { db, ref, set, get, push, update, remove, onValue };
+        window._fbReady = true;
+        document.dispatchEvent(new Event('firebase-ready'));
+    </script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
         .bg-custom-yellow { background-color: #FFD700; }
         .text-custom-blue { color: #1a237e; }
-        .status-pending { background-color: #fef3c7; color: #92400e; }
+        .status-pending  { background-color: #fef3c7; color: #92400e; }
         .status-approved { background-color: #d1fae5; color: #065f46; }
-        .status-denied { background-color: #fee2e2; color: #991b1b; }
-        .hidden-section { display: none !important; }
+        .status-denied   { background-color: #fee2e2; color: #991b1b; }
+        .hidden-section  { display: none !important; }
 
         section { animation: fadeIn 0.4s ease-out; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-
         .form-input-line {
-            width: 100%;
-            border: none;
-            border-bottom: 1px solid #e2e8f0;
-            padding: 8px 0;
-            font-weight: 600;
-            color: #1e293b;
-            outline: none;
-            transition: border-color 0.3s;
-            background: transparent;
+            width: 100%; border: none; border-bottom: 1px solid #e2e8f0;
+            padding: 8px 0; font-weight: 600; color: #1e293b;
+            outline: none; transition: border-color 0.3s; background: transparent;
         }
         .form-input-line:focus { border-bottom: 2px solid #FFD700; }
         .form-label {
-            font-size: 10px;
-            font-weight: 800;
-            color: #94a3b8;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            font-size: 10px; font-weight: 800; color: #94a3b8;
+            text-transform: uppercase; letter-spacing: 0.05em;
         }
 
-        /* Toast */
         #toast {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
+            position: fixed; bottom: 24px; left: 50%;
             transform: translateX(-50%) translateY(80px);
-            background: #1e293b;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 999px;
-            font-size: 13px;
-            font-weight: 600;
-            z-index: 9999;
-            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
-            opacity: 0;
-            pointer-events: none;
-            white-space: nowrap;
+            background: #1e293b; color: white; padding: 12px 24px;
+            border-radius: 999px; font-size: 13px; font-weight: 600;
+            z-index: 9999; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+            opacity: 0; pointer-events: none; white-space: nowrap;
         }
-        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #toast.show    { transform: translateX(-50%) translateY(0); opacity: 1; }
         #toast.success { background: #065f46; }
-        #toast.error { background: #991b1b; }
-        #toast.info { background: #1e40af; }
+        #toast.error   { background: #991b1b; }
+        #toast.info    { background: #1e40af; }
 
-        /* Sync indicator */
         #sync-indicator {
-            position: fixed;
-            top: 70px;
-            right: 16px;
-            z-index: 9998;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: white;
-            border: 1px solid #e2e8f0;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 11px;
-            font-weight: 700;
+            position: fixed; top: 70px; right: 16px; z-index: 9998;
+            display: flex; align-items: center; gap: 6px;
+            background: white; border: 1px solid #e2e8f0;
+            padding: 6px 12px; border-radius: 999px;
+            font-size: 11px; font-weight: 700;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            transition: all 0.3s;
-            opacity: 0;
+            transition: all 0.3s; opacity: 0;
         }
         #sync-indicator.visible { opacity: 1; }
         #sync-indicator.syncing { border-color: #bfdbfe; color: #1d4ed8; }
         #sync-indicator.synced  { border-color: #bbf7d0; color: #065f46; }
         #sync-indicator.error   { border-color: #fecaca; color: #991b1b; }
-        #sync-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            background: currentColor;
-        }
-        #sync-indicator.syncing #sync-dot {
-            animation: pulse 1s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.8); }
-        }
+        #sync-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+        #sync-indicator.syncing #sync-dot { animation: blink 1s infinite; }
+        @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
 
-        /* Loading overlay */
         #loading-overlay {
-            position: fixed; inset: 0; background: rgba(255,255,255,0.92);
+            position: fixed; inset: 0; background: rgba(255,255,255,0.96);
             z-index: 10000; display: flex; flex-direction: column;
             align-items: center; justify-content: center; gap: 16px;
             backdrop-filter: blur(4px);
@@ -111,84 +98,64 @@
         #loading-overlay.hidden { display: none; }
         .spinner {
             width: 48px; height: 48px;
-            border: 4px solid #f1f5f9;
-            border-top-color: #FFD700;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            border: 4px solid #f1f5f9; border-top-color: #FFD700;
+            border-radius: 50%; animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* OD Preview scaling */
         .od-preview-wrapper {
-            display: flex;
-            justify-content: center;
-            background: #cbd5e1;
-            padding: 2rem 1rem;
-            overflow: hidden;
-            border-radius: 1.5rem;
+            display: flex; justify-content: center;
+            background: #cbd5e1; padding: 2rem 1rem;
+            overflow: hidden; border-radius: 1.5rem;
         }
         #od-preview-frame {
-            transform: scale(0.38);
-            transform-origin: top center;
+            transform: scale(0.38); transform-origin: top center;
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.3);
             margin-bottom: calc((297mm * 0.38) - 297mm);
         }
-        @media (min-width: 640px) { #od-preview-frame { transform: scale(0.55); margin-bottom: calc((297mm * 0.55) - 297mm); } }
-        @media (min-width: 1024px) { #od-preview-frame { transform: scale(0.65); margin-bottom: calc((297mm * 0.65) - 297mm); } }
+        @media (min-width:640px)  { #od-preview-frame { transform:scale(0.55); margin-bottom:calc((297mm*0.55)-297mm); } }
+        @media (min-width:1024px) { #od-preview-frame { transform:scale(0.65); margin-bottom:calc((297mm*0.65)-297mm); } }
 
         .a4-page {
-            width: 210mm;
-            height: 297mm;
-            padding: 20mm;
-            background: white;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-            color: #111827;
-            position: relative;
+            width: 210mm; height: 297mm; padding: 20mm;
+            background: white; display: flex; flex-direction: column;
+            box-sizing: border-box; color: #111827; position: relative;
         }
-
-        #od-capture-buffer {
-            position: absolute;
-            left: -9999px;
-            top: 0;
-            width: 210mm;
-            height: 297mm;
-        }
+        #od-capture-buffer { position:absolute; left:-9999px; top:0; width:210mm; height:297mm; }
 
         @media print {
-            .no-print { display: none !important; }
+            body > *:not(#od-print-target) { display:none !important; }
+            #od-print-target { display:block !important; width:210mm; margin:0 auto; }
+            @page { size:A4; margin:0; }
         }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
 
-<!-- Loading Overlay -->
 <div id="loading-overlay">
     <div class="spinner"></div>
-    <p id="loading-msg" class="text-gray-500 font-semibold text-sm">Connecting to SAAF database...</p>
+    <p id="loading-msg" class="text-gray-500 font-semibold text-sm">Connecting to Firebase...</p>
 </div>
 
-<!-- Toast -->
 <div id="toast"></div>
 
-<!-- Sync Indicator -->
 <div id="sync-indicator">
     <div id="sync-dot"></div>
     <span id="sync-label">Syncing...</span>
 </div>
 
-<!-- OD Hidden Capture Buffer -->
 <div id="od-capture-buffer">
     <div id="od-capture-frame" class="a4-page"></div>
 </div>
 
 <div id="app">
-    <!-- AUTH VIEW -->
+
+    <!-- ═══════════ AUTH ═══════════ -->
     <div id="auth-view" class="min-h-screen flex items-center justify-center p-4 hidden-section">
         <div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-100">
             <div class="text-center mb-8">
-                <img src="https://raw.githubusercontent.com/MohammedSulthan07/chatbot-for-health/main/IMG-20260304-WA0029.jpg" alt="Logo" class="h-20 mx-auto mb-4">
+                <img src="https://raw.githubusercontent.com/MohammedSulthan07/chatbot-for-health/main/IMG-20260304-WA0029.jpg"
+                    alt="Logo" class="h-20 mx-auto mb-4">
                 <h1 class="text-2xl font-bold text-gray-800">SAAF Portal Login</h1>
                 <p class="text-xs text-gray-500 mt-2">DACE Competition Management</p>
             </div>
@@ -200,28 +167,28 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input type="password" id="login-password" placeholder="e.g., 1234"
+                    <input type="password" id="login-password" placeholder="Enter password"
                         class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 outline-none transition-all"
                         onkeydown="if(event.key==='Enter') handleLogin()">
                 </div>
-                <button onclick="handleLogin()" class="w-full bg-custom-yellow text-gray-900 font-bold py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md">
+                <button onclick="handleLogin()"
+                    class="w-full bg-custom-yellow text-gray-900 font-bold py-3 rounded-lg hover:bg-yellow-400 transition-colors shadow-md">
                     Login
                 </button>
                 <div class="text-[10px] text-gray-400 bg-gray-50 p-3 rounded-lg border border-dashed border-gray-200 mt-4">
                     <p class="font-bold mb-1 text-gray-600">Testing Accounts:</p>
                     <div class="grid grid-cols-2 gap-2">
-                        <span>Student: 1234</span>
-                        <span>CC: cc123</span>
-                        <span>HOD: hod123</span>
-                        <span>Incharge: in123</span>
+                        <span>Student: 1234</span><span>CC: cc123</span>
+                        <span>HOD: hod123</span><span>Incharge: in123</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- DASHBOARD VIEW -->
+    <!-- ═══════════ DASHBOARD ═══════════ -->
     <div id="dashboard-view" class="hidden-section">
+
         <header class="bg-white border-b p-4 flex items-center justify-between sticky top-0 z-50 shadow-sm">
             <div class="flex items-center gap-4">
                 <button onclick="toggleMenu()" class="text-2xl text-gray-600 p-2 hover:bg-gray-100 rounded-full transition-colors">
@@ -230,16 +197,16 @@
                 <img src="https://raw.githubusercontent.com/MohammedSulthan07/chatbot-for-health/main/IMG-20260304-WA0029.jpg" alt="Logo" class="h-10">
             </div>
             <div class="flex items-center gap-4">
-                <!-- Live sync status badge -->
-                <div id="header-sync" class="hidden sm:flex items-center gap-1.5 text-[10px] font-bold text-gray-400">
-                    <span id="header-sync-dot" class="w-2 h-2 rounded-full bg-green-400 inline-block"></span>
-                    <span id="header-sync-text">Live</span>
+                <div class="hidden sm:flex items-center gap-1.5 text-[10px] font-bold text-gray-400">
+                    <span class="w-2 h-2 rounded-full bg-orange-400 inline-block"></span>
+                    <span>Firebase Live</span>
                 </div>
                 <div class="text-right hidden sm:block">
                     <p id="user-display-name" class="font-bold text-sm text-gray-800 leading-none"></p>
                     <p id="user-role-badge" class="text-[10px] uppercase text-gray-500 font-bold mt-1 tracking-wider"></p>
                 </div>
-                <button onclick="handleLogout()" class="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs font-bold border border-red-100 hover:bg-red-100 transition-colors">
+                <button onclick="handleLogout()"
+                    class="bg-red-50 text-red-600 px-4 py-2 rounded-xl text-xs font-bold border border-red-100 hover:bg-red-100 transition-colors">
                     Logout
                 </button>
             </div>
@@ -247,7 +214,7 @@
 
         <!-- Side Nav -->
         <div id="navMenu" class="fixed inset-0 bg-black/50 z-[60] hidden backdrop-blur-sm">
-            <div class="bg-white w-72 h-full p-6 space-y-4 shadow-2xl">
+            <div class="bg-white w-72 h-full p-6 shadow-2xl flex flex-col">
                 <div class="flex justify-between items-center mb-8">
                     <div class="flex items-center gap-2">
                         <div class="w-8 h-8 bg-custom-yellow rounded-lg flex items-center justify-center">
@@ -255,29 +222,32 @@
                         </div>
                         <h2 class="text-xl font-bold text-custom-blue">DACE Menu</h2>
                     </div>
-                    <button onclick="toggleMenu()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+                    <button onclick="toggleMenu()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
                 </div>
-                <nav class="flex flex-col gap-2">
-                    <button onclick="showSection('home')" class="nav-btn p-4 text-left rounded-xl hover:bg-slate-50 font-semibold flex items-center gap-4 transition-all">
+                <nav class="flex flex-col gap-2 flex-1">
+                    <button onclick="showSection('home')" class="p-4 text-left rounded-xl hover:bg-slate-50 font-semibold flex items-center gap-4 transition-all">
                         <i class="fa-solid fa-house text-blue-500 w-5"></i> Home
                     </button>
-                    <button id="nav-apply-od" onclick="showSection('apply-od')" class="nav-btn p-4 text-left rounded-xl hover:bg-slate-50 font-semibold flex items-center gap-4 transition-all">
+                    <button id="nav-apply-od" onclick="showSection('apply-od')" class="p-4 text-left rounded-xl hover:bg-slate-50 font-semibold flex items-center gap-4 transition-all">
                         <i class="fa-solid fa-file-pen text-orange-500 w-5"></i> SIPH OD Apply Form
                     </button>
-                    <button onclick="showSection('winners')" class="nav-btn p-4 text-left rounded-xl hover:bg-slate-50 font-semibold flex items-center gap-4 transition-all">
+                    <button onclick="showSection('winners')" class="p-4 text-left rounded-xl hover:bg-slate-50 font-semibold flex items-center gap-4 transition-all">
                         <i class="fa-solid fa-trophy text-yellow-500 w-5"></i> Winners
                     </button>
-                    <button id="nav-approvals" onclick="showSection('approvals')" class="nav-btn p-4 text-left rounded-xl hover:bg-slate-50 font-semibold flex items-center gap-4 transition-all">
+                    <button id="nav-approvals" onclick="showSection('approvals')" class="p-4 text-left rounded-xl hover:bg-slate-50 font-semibold flex items-center gap-4 transition-all">
                         <i class="fa-solid fa-clipboard-check text-green-500 w-5"></i> Pending Approvals
                     </button>
-                    <button id="nav-add-event" onclick="showSection('add-event')" class="nav-btn p-4 text-left rounded-xl hover:bg-slate-50 font-semibold flex items-center gap-4 transition-all">
+                    <button id="nav-add-event" onclick="showSection('add-event')" class="p-4 text-left rounded-xl hover:bg-slate-50 font-semibold flex items-center gap-4 transition-all">
                         <i class="fa-solid fa-calendar-plus text-purple-500 w-5"></i> Event Manager
                     </button>
                 </nav>
-                <div class="pt-6 border-t mt-auto">
-                    <button onclick="manualSync()" class="w-full p-3 text-left rounded-xl hover:bg-slate-50 font-semibold flex items-center gap-3 text-sm text-gray-500 transition-all">
-                        <i class="fa-solid fa-rotate text-gray-400 w-5"></i> Force Sync
-                    </button>
+                <div class="pt-4 border-t mt-4">
+                    <div class="flex items-center gap-2 text-xs text-gray-400 font-semibold px-2">
+                        <i class="fa-solid fa-database text-orange-400"></i>
+                        Firebase Realtime Database
+                    </div>
                 </div>
             </div>
         </div>
@@ -292,7 +262,7 @@
                 </div>
                 <div class="bg-white rounded-3xl border border-gray-100 p-2 shadow-sm">
                     <img src="https://raw.githubusercontent.com/MohammedSulthan07/chatbot-for-health/main/IMG-20260304-WA0029.jpg"
-                        alt="Event Banner" class="w-full rounded-2xl mb-2 opacity-60 grayscale hover:grayscale-0 transition-all duration-700">
+                        alt="Banner" class="w-full rounded-2xl mb-2 opacity-60 grayscale hover:grayscale-0 transition-all duration-700">
                     <div class="flex justify-center gap-2 pb-2">
                         <span class="w-2 h-2 bg-gray-800 rounded-full"></span>
                         <span class="w-2 h-2 bg-gray-200 rounded-full"></span>
@@ -314,7 +284,12 @@
                 <h2 class="text-2xl font-bold text-custom-blue mt-8 flex items-center gap-2">
                     <i class="fa-solid fa-fire text-orange-500"></i> Upcoming Events
                 </h2>
-                <div id="events-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                <div id="events-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="col-span-2 text-center text-gray-400 p-8 bg-white rounded-2xl border">
+                        <div class="spinner mx-auto mb-3" style="width:28px;height:28px;border-width:3px;"></div>
+                        Loading events...
+                    </div>
+                </div>
             </section>
 
             <!-- WINNERS -->
@@ -335,7 +310,6 @@
                     <h2 class="text-3xl font-bold text-custom-blue">SIPH Access Form (SAAF)</h2>
                     <span class="text-[10px] font-bold px-3 py-1 bg-blue-100 text-blue-700 rounded-full uppercase">Academic Year 24-25</span>
                 </div>
-
                 <form id="od-form" class="bg-white p-10 rounded-[40px] shadow-2xl border border-gray-50 space-y-8">
                     <div class="space-y-8">
                         <div>
@@ -380,12 +354,13 @@
                         </div>
                     </div>
                     <div class="pt-4">
-                        <button type="submit" id="submit-btn" class="w-full bg-custom-blue text-white font-bold py-5 rounded-2xl shadow-xl hover:shadow-blue-200 transition-all active:scale-95 flex items-center justify-center gap-2 text-lg">
+                        <button type="submit" id="submit-btn"
+                            class="w-full text-white font-bold py-5 rounded-2xl shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 text-lg"
+                            style="background-color:#1a237e;">
                             <i class="fa-solid fa-paper-plane"></i> Submit Application
                         </button>
                     </div>
                 </form>
-
                 <div class="pt-6">
                     <h3 class="text-xl font-bold flex items-center gap-2 mb-4">
                         <i class="fa-solid fa-clock-rotate-left text-gray-400"></i> My SAAF History
@@ -398,9 +373,9 @@
             <section id="section-approvals" class="hidden-section space-y-6">
                 <div class="flex items-center justify-between">
                     <h2 class="text-2xl font-bold text-gray-800">Pending Approvals</h2>
-                    <button onclick="manualSync().then(renderApprovals)" class="text-xs font-bold text-blue-600 flex items-center gap-1 hover:underline">
-                        <i class="fa-solid fa-rotate"></i> Refresh
-                    </button>
+                    <span class="text-[10px] font-bold px-3 py-1 bg-orange-100 text-orange-700 rounded-full flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse inline-block"></span> Firebase Live
+                    </span>
                 </div>
                 <div id="approvals-list" class="grid grid-cols-1 gap-4"></div>
             </section>
@@ -423,12 +398,11 @@
                             <input type="text" id="new-img" placeholder="https://..." class="form-input-line">
                         </div>
                     </div>
-                    <button type="submit" id="publish-btn" class="w-full bg-green-600 text-white font-bold py-4 rounded-2xl hover:bg-green-700 transition-colors shadow-lg">
+                    <button type="submit" id="publish-btn"
+                        class="w-full bg-green-600 text-white font-bold py-4 rounded-2xl hover:bg-green-700 transition-colors shadow-lg">
                         Publish Event
                     </button>
                 </form>
-
-                <!-- Existing events list with delete -->
                 <div>
                     <h3 class="text-lg font-bold text-gray-700 mb-3 flex items-center gap-2">
                         <i class="fa-solid fa-list text-gray-400"></i> Published Events
@@ -447,7 +421,6 @@
                         <i class="fa-solid fa-check-double mr-1"></i>Fully Approved
                     </span>
                 </div>
-
                 <div class="bg-white rounded-3xl border border-gray-100 shadow-xl p-6 space-y-6">
                     <div class="bg-green-50 border border-green-200 rounded-2xl p-4 text-sm text-green-800 flex items-start gap-3">
                         <i class="fa-solid fa-circle-check text-green-500 mt-0.5 text-base flex-shrink-0"></i>
@@ -456,11 +429,9 @@
                             <p class="font-medium opacity-80 mt-0.5">Your OD letter is ready. Download as image or print as PDF.</p>
                         </div>
                     </div>
-
-                    <div class="od-preview-wrapper" style="min-height: 320px;">
+                    <div class="od-preview-wrapper" style="min-height:320px;">
                         <div id="od-preview-frame" class="a4-page"></div>
                     </div>
-
                     <div class="flex flex-col sm:flex-row gap-3 pt-2">
                         <button onclick="downloadODpng()" id="od-png-btn"
                             class="flex-1 bg-blue-600 text-white font-bold py-4 rounded-2xl hover:bg-blue-700 transition-all shadow-lg flex items-center justify-center gap-2 active:scale-95">
@@ -478,295 +449,89 @@
     </div>
 </div>
 
-<style id="od-print-style">
-    @media print {
-        body > *:not(#od-print-target) { display: none !important; }
-        #od-print-target {
-            display: block !important;
-            width: 210mm;
-            margin: 0 auto;
-        }
-        @page { size: A4; margin: 0; }
-    }
-</style>
 <div id="od-print-target" style="display:none;"></div>
 
 <script>
-// ═══════════════════════════════════════════════════════════════
-//  GITHUB BACKEND CONFIG
-//  ⚠️  ROTATE YOUR TOKEN AT github.com/settings/tokens
-//      Replace the token below with your new one after rotating.
-// ═══════════════════════════════════════════════════════════════
-const GH_OWNER  = "vs5577";
-const GH_REPO   = "siph";
-const GH_BRANCH = "main";
-const GH_TOKEN  = "SH"; // ← replace after rotating
-
-const GH_API    = `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents`;
-const GH_HEADS  = {
-    "Authorization": `token ${GH_TOKEN}`,
-    "Accept": "application/vnd.github.v3+json",
-    "Content-Type": "application/json"
-};
-
-// File paths in repo
-const FILE_APPS   = "data/applications.json";
-const FILE_EVENTS = "data/events.json";
-
-// ─── FILE SHAs (needed for updates) ──────────────────────────
-let fileSHAs = { [FILE_APPS]: null, [FILE_EVENTS]: null };
-
-// ─── USERS (local — no sensitive data stored on GitHub) ──────
+// ═══════════════════════════════════════════════════════
+//  USERS (local auth)
+// ═══════════════════════════════════════════════════════
 const USERS = {
-    "stucse104@gmail.com": { pass: "1234",   role: "student",  dept: "CSE", name: "Student 104" },
-    "cccse@gmail.com":     { pass: "cc123",  role: "cc",       dept: "CSE", name: "Prof. Rajesh (CC)" },
-    "hodcse@gmail.com":    { pass: "hod123", role: "hod",      dept: "CSE", name: "Dr. Sathish (HOD)" },
-    "incse@gmail.com":     { pass: "in123",  role: "incharge", dept: "CSE", name: "Head Incharge (SAAF)" }
+    "stucse104@gmail.com": { pass:"1234",   role:"student",  dept:"CSE", name:"Student 104" },
+    "cccse@gmail.com":     { pass:"cc123",  role:"cc",       dept:"CSE", name:"Prof. Rajesh (CC)" },
+    "hodcse@gmail.com":    { pass:"hod123", role:"hod",      dept:"CSE", name:"Dr. Sathish (HOD)" },
+    "incse@gmail.com":     { pass:"in123",  role:"incharge", dept:"CSE", name:"Head Incharge (SAAF)" }
 };
 
 let currentUser = null;
-let db = { applications: [], events: [] };
+let FB = null;
+let activeListeners = {};
 
-// ─── AUTO-POLL (every 30s when dashboard is open) ─────────────
-let pollTimer = null;
-function startPolling() {
-    stopPolling();
-    pollTimer = setInterval(() => {
-        silentSync();
-    }, 30000);
-}
-function stopPolling() {
-    if (pollTimer) clearInterval(pollTimer);
-}
+// ── Wait for Firebase ─────────────────────────────────
+document.addEventListener('firebase-ready', async () => {
+    FB = window._fb;
+    await seedEventsIfEmpty();
+    hideLoading();
+    document.getElementById('auth-view').classList.remove('hidden-section');
+});
 
-// ═══════════════════════════════════════════════════════════════
-//  GITHUB API HELPERS
-// ═══════════════════════════════════════════════════════════════
+setTimeout(() => {
+    if (!window._fbReady) showLoadError("Firebase SDK failed to load. Check your internet connection.");
+}, 10000);
 
-async function ghRead(path) {
-    const res = await fetch(`${GH_API}/${path}?ref=${GH_BRANCH}&t=${Date.now()}`, {
-        headers: GH_HEADS
-    });
-    if (res.status === 404) return null; // file doesn't exist yet
-    if (!res.ok) throw new Error(`GitHub read failed: ${res.status}`);
-    const json = await res.json();
-    fileSHAs[path] = json.sha;
-    const decoded = atob(json.content.replace(/\n/g, ''));
-    return JSON.parse(decoded);
-}
-
-async function ghWrite(path, data, message) {
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-    const body = {
-        message,
-        content,
-        branch: GH_BRANCH
-    };
-    if (fileSHAs[path]) body.sha = fileSHAs[path];
-
-    const res = await fetch(`${GH_API}/${path}`, {
-        method: "PUT",
-        headers: GH_HEADS,
-        body: JSON.stringify(body)
-    });
-    if (!res.ok) {
-        const err = await res.json();
-        // Conflict: SHA mismatch → re-read and retry once
-        if (res.status === 409 || res.status === 422) {
-            await ghRead(path); // refresh SHA
-            body.sha = fileSHAs[path];
-            const retry = await fetch(`${GH_API}/${path}`, {
-                method: "PUT",
-                headers: GH_HEADS,
-                body: JSON.stringify(body)
-            });
-            if (!retry.ok) throw new Error(`GitHub write retry failed: ${retry.status}`);
-            const retryJson = await retry.json();
-            fileSHAs[path] = retryJson.content.sha;
-            return;
+// ── Seed default events ───────────────────────────────
+async function seedEventsIfEmpty() {
+    try {
+        const snap = await FB.get(FB.ref(FB.db, 'events'));
+        if (!snap.exists()) {
+            const r1 = FB.push(FB.ref(FB.db, 'events'));
+            const r2 = FB.push(FB.ref(FB.db, 'events'));
+            await FB.set(r1, { id: r1.key, title: "DACE Hackathon 2024", loc: "Block A Labs",
+                img: "https://raw.githubusercontent.com/MohammedSulthan07/chatbot-for-health/main/IMG-20260304-WA0029.jpg" });
+            await FB.set(r2, { id: r2.key, title: "Tech Symposium 2.0", loc: "Auditorium",
+                img: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80" });
         }
-        throw new Error(`GitHub write failed: ${res.status} — ${JSON.stringify(err)}`);
-    }
-    const resJson = await res.json();
-    fileSHAs[path] = resJson.content.sha;
+    } catch(e) { console.warn("Seed:", e); }
 }
 
-// ─── INITIAL DB LOAD ─────────────────────────────────────────
-async function loadDB() {
-    showLoading("Connecting to SAAF database...");
-    try {
-        // Try reading existing files
-        const [apps, events] = await Promise.all([
-            ghRead(FILE_APPS),
-            ghRead(FILE_EVENTS)
-        ]);
-
-        if (apps !== null) {
-            db.applications = apps;
-        } else {
-            // First run: create the file
-            db.applications = [];
-            await ghWrite(FILE_APPS, [], "init: create applications.json");
-        }
-
-        if (events !== null) {
-            db.events = events;
-        } else {
-            // Seed default events
-            db.events = [
-                { id: 1, title: "DACE Hackathon 2024", loc: "Block A Labs",  img: "https://raw.githubusercontent.com/MohammedSulthan07/chatbot-for-health/main/IMG-20260304-WA0029.jpg" },
-                { id: 2, title: "Tech Symposium 2.0",  loc: "Auditorium",    img: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80" }
-            ];
-            await ghWrite(FILE_EVENTS, db.events, "init: seed default events");
-        }
-
-        hideLoading();
-        return true;
-    } catch (err) {
-        console.error("DB load error:", err);
-        hideLoading();
-        showLoadError(err.message);
-        return false;
-    }
+// ── Loading / Toast / Sync UI ─────────────────────────
+function hideLoading() { document.getElementById('loading-overlay').classList.add('hidden'); }
+function showLoadError(msg) {
+    const ol = document.getElementById('loading-overlay');
+    ol.innerHTML = `<div class="text-center p-8 max-w-sm">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i></div>
+        <h3 class="font-bold text-gray-800 text-lg mb-2">Connection Failed</h3>
+        <p class="text-sm text-gray-500 mb-1">Could not connect to Firebase.</p>
+        <p class="text-xs text-red-400 font-mono mb-6 break-all">${msg}</p>
+        <button onclick="location.reload()" class="bg-custom-yellow text-gray-900 font-bold px-6 py-3 rounded-xl">Retry</button>
+    </div>`;
+    ol.classList.remove('hidden');
+}
+function showLoading(msg) {
+    const ol = document.getElementById('loading-overlay');
+    ol.innerHTML = `<div class="spinner"></div><p class="text-gray-500 font-semibold text-sm">${msg||'Loading...'}</p>`;
+    ol.classList.remove('hidden');
 }
 
-async function saveApps(commitMsg) {
-    showSync("syncing", "Saving...");
-    try {
-        await ghWrite(FILE_APPS, db.applications, commitMsg || "update: applications");
-        showSync("synced", "Saved ✓");
-        hideSync(2500);
-    } catch (err) {
-        console.error("Save apps error:", err);
-        showSync("error", "Save failed");
-        hideSync(4000);
-        toast("Sync error: " + err.message, "error");
-    }
+function toast(msg, type='info') {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = `show ${type}`;
+    clearTimeout(t._t);
+    t._t = setTimeout(() => { t.className=''; }, 3200);
 }
 
-async function saveEvents(commitMsg) {
-    showSync("syncing", "Saving...");
-    try {
-        await ghWrite(FILE_EVENTS, db.events, commitMsg || "update: events");
-        showSync("synced", "Saved ✓");
-        hideSync(2500);
-    } catch (err) {
-        console.error("Save events error:", err);
-        showSync("error", "Save failed");
-        hideSync(4000);
-        toast("Sync error: " + err.message, "error");
-    }
-}
-
-// Silent background sync (no UI disruption)
-async function silentSync() {
-    try {
-        const [apps, events] = await Promise.all([
-            ghRead(FILE_APPS),
-            ghRead(FILE_EVENTS)
-        ]);
-        if (apps !== null)   db.applications = apps;
-        if (events !== null) db.events = events;
-
-        // Refresh current section
-        const active = document.querySelector('main > section:not(.hidden-section)');
-        if (active) {
-            const id = active.id.replace('section-', '');
-            if (id === 'home')      renderEvents();
-            if (id === 'apply-od') renderHistory();
-            if (id === 'approvals') renderApprovals();
-            if (id === 'add-event') renderManageEvents();
-        }
-        updateHeaderSync(true);
-    } catch (err) {
-        updateHeaderSync(false);
-        console.warn("Silent sync failed:", err);
-    }
-}
-
-async function manualSync() {
-    showSync("syncing", "Syncing...");
-    try {
-        const [apps, events] = await Promise.all([
-            ghRead(FILE_APPS),
-            ghRead(FILE_EVENTS)
-        ]);
-        if (apps !== null)   db.applications = apps;
-        if (events !== null) db.events = events;
-        showSync("synced", "Up to date ✓");
-        hideSync(2500);
-        updateHeaderSync(true);
-        toast("Data refreshed from GitHub!", "success");
-    } catch (err) {
-        showSync("error", "Sync failed");
-        hideSync(4000);
-        updateHeaderSync(false);
-        toast("Sync failed: " + err.message, "error");
-    }
-}
-
-// ─── SYNC UI HELPERS ─────────────────────────────────────────
 function showSync(state, label) {
     const el = document.getElementById('sync-indicator');
-    const lb = document.getElementById('sync-label');
     el.className = `visible ${state}`;
-    lb.textContent = label;
+    document.getElementById('sync-label').textContent = label;
 }
-function hideSync(delay) {
-    setTimeout(() => {
-        document.getElementById('sync-indicator').classList.remove('visible');
-    }, delay || 2000);
-}
-function updateHeaderSync(ok) {
-    const dot  = document.getElementById('header-sync-dot');
-    const text = document.getElementById('header-sync-text');
-    if (!dot) return;
-    if (ok) {
-        dot.className = 'w-2 h-2 rounded-full bg-green-400 inline-block';
-        text.textContent = 'Live';
-    } else {
-        dot.className = 'w-2 h-2 rounded-full bg-red-400 inline-block';
-        text.textContent = 'Offline';
-    }
+function hideSync(ms) {
+    setTimeout(() => document.getElementById('sync-indicator').classList.remove('visible'), ms||2000);
 }
 
-// ─── LOADING OVERLAY ─────────────────────────────────────────
-function showLoading(msg) {
-    document.getElementById('loading-msg').textContent = msg || "Loading...";
-    document.getElementById('loading-overlay').classList.remove('hidden');
-}
-function hideLoading() {
-    document.getElementById('loading-overlay').classList.add('hidden');
-}
-function showLoadError(msg) {
-    const overlay = document.getElementById('loading-overlay');
-    overlay.innerHTML = `
-        <div class="text-center p-8 max-w-sm">
-            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fa-solid fa-triangle-exclamation text-red-500 text-2xl"></i>
-            </div>
-            <h3 class="font-bold text-gray-800 text-lg mb-2">Connection Failed</h3>
-            <p class="text-sm text-gray-500 mb-1">Could not connect to the GitHub database.</p>
-            <p class="text-xs text-red-400 font-mono mb-6">${msg}</p>
-            <button onclick="location.reload()" class="bg-custom-yellow text-gray-900 font-bold px-6 py-3 rounded-xl">
-                Retry
-            </button>
-        </div>`;
-    overlay.classList.remove('hidden');
-}
-
-// ─── TOAST ───────────────────────────────────────────────────
-function toast(msg, type = 'info') {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = `show ${type}`;
-    clearTimeout(t._timer);
-    t._timer = setTimeout(() => { t.className = ''; }, 3000);
-}
-
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 //  AUTH
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 function handleLogin() {
     const email = document.getElementById('login-email').value.trim();
     const pass  = document.getElementById('login-password').value;
@@ -775,11 +540,11 @@ function handleLogin() {
         document.getElementById('auth-view').classList.add('hidden-section');
         document.getElementById('dashboard-view').classList.remove('hidden-section');
         document.getElementById('user-display-name').innerText = currentUser.name;
-        document.getElementById('user-role-badge').innerText = currentUser.role === 'incharge' ? 'Incharge' : currentUser.role;
+        document.getElementById('user-role-badge').innerText =
+            currentUser.role === 'incharge' ? 'Incharge' : currentUser.role;
         setupPermissions();
         showSection('home');
-        startPolling();
-        window.scrollTo(0, 0);
+        window.scrollTo(0,0);
     } else {
         toast("Incorrect email or password.", "error");
     }
@@ -787,7 +552,7 @@ function handleLogin() {
 
 function handleLogout() {
     if (confirm("Are you sure you want to log out?")) {
-        stopPolling();
+        Object.values(activeListeners).forEach(u => u && u());
         location.reload();
     }
 }
@@ -799,400 +564,317 @@ function setupPermissions() {
     document.getElementById('nav-add-event').classList.toggle('hidden', r !== 'incharge');
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 //  NAVIGATION
-// ═══════════════════════════════════════════════════════════════
-function toggleMenu() {
-    document.getElementById('navMenu').classList.toggle('hidden');
+// ═══════════════════════════════════════════════════════
+function toggleMenu() { document.getElementById('navMenu').classList.toggle('hidden'); }
+
+function detach(key) {
+    if (activeListeners[key]) { activeListeners[key](); delete activeListeners[key]; }
 }
 
 function showSection(id) {
     document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden-section'));
-    const target = document.getElementById('section-' + id);
-    if (target) target.classList.remove('hidden-section');
-    if (id === 'home')       renderEvents();
-    if (id === 'apply-od')   renderHistory();
-    if (id === 'approvals')  renderApprovals();
-    if (id === 'add-event')  { renderManageEvents(); }
+    const t = document.getElementById('section-' + id);
+    if (t) t.classList.remove('hidden-section');
+    if (id === 'home')      listenEvents();
+    if (id === 'apply-od')  listenHistory();
+    if (id === 'approvals') listenApprovals();
+    if (id === 'add-event') listenManageEvents();
     document.getElementById('navMenu').classList.add('hidden');
-    window.scrollTo(0, 0);
+    window.scrollTo(0,0);
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+//  FIREBASE REAL-TIME LISTENERS
+// ═══════════════════════════════════════════════════════
+
+function listenEvents() {
+    detach('ev-home');
+    activeListeners['ev-home'] = FB.onValue(FB.ref(FB.db,'events'), snap => {
+        const el = document.getElementById('events-list');
+        el.innerHTML = '';
+        if (!snap.exists()) {
+            el.innerHTML = '<div class="col-span-2 text-center text-gray-400 p-8 bg-white rounded-2xl border">No events published yet.</div>';
+            return;
+        }
+        Object.values(snap.val()).forEach(ev => {
+            const c = document.createElement('div');
+            c.className = "bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100";
+            c.innerHTML = `<img src="${ev.img}" class="h-32 w-full object-cover"
+                onerror="this.src='https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&q=80'">
+                <div class="p-4"><h4 class="font-bold text-gray-800">${ev.title}</h4>
+                <p class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-location-dot"></i> ${ev.loc}</p></div>`;
+            el.appendChild(c);
+        });
+    });
+}
+
+function listenHistory() {
+    detach('history');
+    const el = document.getElementById('student-history');
+    el.innerHTML = '<div class="text-center text-gray-400 p-6"><div class="spinner mx-auto mb-2" style="width:24px;height:24px;border-width:3px;"></div>Loading...</div>';
+    activeListeners['history'] = FB.onValue(FB.ref(FB.db,'applications'), snap => {
+        el.innerHTML = '';
+        if (!snap.exists()) { el.innerHTML = '<div class="bg-gray-100 p-8 rounded-2xl text-center text-gray-400">No applications found.</div>'; return; }
+        const all = Object.values(snap.val())
+            .filter(a => a.studentEmail === currentUser.email)
+            .sort((a,b) => b.submittedAt - a.submittedAt);
+        if (!all.length) { el.innerHTML = '<div class="bg-gray-100 p-8 rounded-2xl text-center text-gray-400">No applications found.</div>'; return; }
+        all.forEach(app => {
+            const d = document.createElement('div');
+            d.className = "bg-white p-6 rounded-2xl shadow-sm border border-gray-100";
+            let sL='Under Review', sC='status-pending';
+            if (app.status==='denied')   { sL='Rejected';  sC='status-denied'; }
+            if (app.status==='approved') { sL='Approved';  sC='status-approved'; }
+            const dots = `<div class="flex gap-3 mt-3 items-center">
+                <div class="flex items-center gap-1">
+                    <span class="w-2.5 h-2.5 rounded-full ${app.cc===1?'bg-green-500':(app.status==='denied'&&app.ccRemark?'bg-red-400':'bg-gray-200')}"></span>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">CC</span></div>
+                <span class="text-gray-200">→</span>
+                <div class="flex items-center gap-1">
+                    <span class="w-2.5 h-2.5 rounded-full ${app.hod===1?'bg-green-500':(app.status==='denied'&&app.hodRemark?'bg-red-400':'bg-gray-200')}"></span>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">HOD</span></div>
+                <span class="text-gray-200">→</span>
+                <div class="flex items-center gap-1">
+                    <span class="w-2.5 h-2.5 rounded-full ${app.incharge===1?'bg-green-500':(app.status==='denied'&&app.inchargeRemark?'bg-red-400':'bg-gray-200')}"></span>
+                    <span class="text-[10px] font-bold text-gray-400 uppercase">Incharge</span></div>
+            </div>`;
+            const remark = app.status==='denied'&&(app.ccRemark||app.hodRemark||app.inchargeRemark)
+                ? `<div class="mt-3 bg-red-50 border border-red-100 rounded-xl p-3">
+                    <p class="text-[10px] font-black text-red-400 uppercase mb-1">Rejection Reason</p>
+                    <p class="text-sm text-red-700 font-medium">${app.ccRemark||app.hodRemark||app.inchargeRemark}</p></div>` : '';
+            const odBtn = app.status==='approved'
+                ? `<button onclick="openODGenerator('${app.id}')"
+                    class="mt-4 w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-all flex items-center justify-center gap-2 shadow-md">
+                    <i class="fa-solid fa-file-arrow-down"></i> Download OD Letter</button>` : '';
+            const sub = app.submittedAt
+                ? `<p class="text-[10px] text-gray-300 mt-0.5">Submitted: ${new Date(app.submittedAt).toLocaleString('en-GB')}</p>` : '';
+            d.innerHTML = `<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div class="flex-1">
+                    <p class="font-bold text-gray-800">${app.event}</p>
+                    <p class="text-xs text-gray-400 font-bold mt-0.5">${app.from} → ${app.to}</p>
+                    ${sub}${dots}${remark}${odBtn}
+                </div>
+                <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase ${sC} self-start sm:self-center flex-shrink-0">${sL}</span>
+            </div>`;
+            el.appendChild(d);
+        });
+    });
+}
+
+function listenApprovals() {
+    detach('approvals');
+    const el = document.getElementById('approvals-list');
+    el.innerHTML = '<div class="text-center text-gray-400 p-6"><div class="spinner mx-auto mb-2" style="width:24px;height:24px;border-width:3px;"></div>Loading...</div>';
+    activeListeners['approvals'] = FB.onValue(FB.ref(FB.db,'applications'), snap => {
+        el.innerHTML = '';
+        if (!snap.exists()) { el.innerHTML = '<div class="p-10 text-center text-gray-400 italic bg-white rounded-3xl border">No pending requests at this time.</div>'; return; }
+        const pending = Object.values(snap.val()).filter(app => {
+            if (app.status !== 'pending') return false;
+            if (currentUser.role !== 'incharge' && app.dept !== currentUser.dept) return false;
+            if (currentUser.role==='cc'       && app.cc===0) return true;
+            if (currentUser.role==='hod'      && app.cc===1 && app.hod===0) return true;
+            if (currentUser.role==='incharge' && app.hod===1 && app.incharge===0) return true;
+            return false;
+        });
+        if (!pending.length) { el.innerHTML = '<div class="p-10 text-center text-gray-400 italic bg-white rounded-3xl border">No pending requests at this time.</div>'; return; }
+        pending.forEach(app => {
+            const c = document.createElement('div');
+            c.className = "bg-white p-6 rounded-3xl border shadow-lg border-gray-100";
+            c.id = `card-${app.id}`;
+            c.innerHTML = `<h4 class="font-bold text-xl">${app.studentName}</h4>
+                <p class="text-xs text-gray-500 mb-1">${app.dept} | ${app.meta}</p>
+                <p class="text-xs text-gray-400 mb-4">Reg: ${app.regNo||'N/A'}</p>
+                <div class="bg-slate-50 p-4 rounded-xl mb-4 text-sm">
+                    <p><strong>Event:</strong> ${app.event}</p>
+                    <p><strong>Period:</strong> ${app.from} → ${app.to}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Rejection Reason (required if rejecting)</label>
+                    <input type="text" id="remark-${app.id}" placeholder="e.g., Dates conflict with exams" class="form-input-line mt-1">
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="processApp('${app.id}',1)"
+                        class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">
+                        <i class="fa-solid fa-check mr-1"></i>Approve</button>
+                    <button onclick="processApp('${app.id}',2)"
+                        class="flex-1 bg-red-50 text-red-600 py-3 rounded-xl font-bold hover:bg-red-100 transition border border-red-100">
+                        <i class="fa-solid fa-xmark mr-1"></i>Reject</button>
+                </div>`;
+            el.appendChild(c);
+        });
+    });
+}
+
+function listenManageEvents() {
+    detach('mg-ev');
+    const el = document.getElementById('manage-events-list');
+    el.innerHTML = '<div class="text-center text-gray-400 p-4">Loading...</div>';
+    activeListeners['mg-ev'] = FB.onValue(FB.ref(FB.db,'events'), snap => {
+        el.innerHTML = '';
+        if (!snap.exists()) { el.innerHTML = '<div class="text-center text-gray-400 p-6 bg-white rounded-2xl border">No events yet.</div>'; return; }
+        Object.values(snap.val()).forEach(ev => {
+            const i = document.createElement('div');
+            i.className = "bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between gap-4";
+            i.innerHTML = `<div class="flex items-center gap-3 flex-1 min-w-0">
+                <img src="${ev.img}" class="w-12 h-12 rounded-xl object-cover flex-shrink-0"
+                    onerror="this.src='https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&q=60'">
+                <div class="min-w-0">
+                    <p class="font-bold text-sm text-gray-800 truncate">${ev.title}</p>
+                    <p class="text-xs text-gray-400">${ev.loc}</p>
+                </div></div>
+                <button onclick="deleteEvent('${ev.id}')"
+                    class="flex-shrink-0 text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-xl transition-all">
+                    <i class="fa-solid fa-trash text-sm"></i></button>`;
+            el.appendChild(i);
+        });
+    });
+}
+
+// ═══════════════════════════════════════════════════════
 //  SUBMIT APPLICATION
-// ═══════════════════════════════════════════════════════════════
-document.getElementById('od-form').addEventListener('submit', async (e) => {
+// ═══════════════════════════════════════════════════════
+document.getElementById('od-form').addEventListener('submit', async e => {
     e.preventDefault();
     const btn = document.getElementById('submit-btn');
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting...';
-
-    // Refresh from GitHub first to avoid overwriting others' data
+    showSync('syncing','Saving...');
     try {
-        const latest = await ghRead(FILE_APPS);
-        if (latest !== null) db.applications = latest;
-    } catch {}
-
-    const app = {
-        id: Date.now(),
-        studentEmail: currentUser.email,
-        studentName:  document.getElementById('stu-name').value,
-        regNo:        document.getElementById('stu-reg').value,
-        dept:         document.getElementById('stu-dept').value,
-        meta:         document.getElementById('stu-meta').value,
-        event:        document.getElementById('event-name').value,
-        from:         document.getElementById('date-from').value,
-        to:           document.getElementById('date-to').value,
-        cc: 0, hod: 0, incharge: 0,
-        status: 'pending',
-        ccRemark: '', hodRemark: '', inchargeRemark: '',
-        submittedAt: new Date().toISOString()
-    };
-
-    db.applications.push(app);
-
-    try {
-        await saveApps(`submit: new OD application from ${app.studentName}`);
+        const nr = FB.push(FB.ref(FB.db,'applications'));
+        await FB.set(nr, {
+            id: nr.key,
+            studentEmail: currentUser.email,
+            studentName:  document.getElementById('stu-name').value,
+            regNo:        document.getElementById('stu-reg').value,
+            dept:         document.getElementById('stu-dept').value,
+            meta:         document.getElementById('stu-meta').value,
+            event:        document.getElementById('event-name').value,
+            from:         document.getElementById('date-from').value,
+            to:           document.getElementById('date-to').value,
+            cc:0, hod:0, incharge:0, status:'pending',
+            ccRemark:'', hodRemark:'', inchargeRemark:'',
+            submittedAt: Date.now()
+        });
+        showSync('synced','Saved ✓'); hideSync(2500);
         toast("Application submitted successfully!", "success");
         e.target.reset();
-        renderHistory();
-    } catch (err) {
-        // Remove from local if save failed
-        db.applications = db.applications.filter(a => a.id !== app.id);
-        toast("Failed to submit. Please try again.", "error");
+    } catch(err) {
+        showSync('error','Failed'); hideSync(3000);
+        toast("Failed: " + err.message, "error");
     } finally {
         btn.disabled = false;
         btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Submit Application';
     }
 });
 
-// ═══════════════════════════════════════════════════════════════
-//  STUDENT HISTORY
-// ═══════════════════════════════════════════════════════════════
-function renderHistory() {
-    const list = document.getElementById('student-history');
-    const myApps = db.applications.filter(a => a.studentEmail === currentUser.email);
-    list.innerHTML = myApps.length
-        ? ''
-        : '<div class="bg-gray-100 p-8 rounded-2xl text-center text-gray-400">No applications found.</div>';
-
-    [...myApps].reverse().forEach(app => {
-        const item = document.createElement('div');
-        item.className = "bg-white p-6 rounded-2xl shadow-sm border border-gray-100";
-
-        let sLabel = "Under Review", sClass = "status-pending";
-        if (app.status === 'denied')   { sLabel = "Rejected"; sClass = "status-denied"; }
-        if (app.status === 'approved') { sLabel = "Approved"; sClass = "status-approved"; }
-
-        const dots = `
-            <div class="flex gap-3 mt-3 items-center">
-                <div class="flex items-center gap-1">
-                    <span class="w-2.5 h-2.5 rounded-full ${app.cc === 1 ? 'bg-green-500' : (app.status === 'denied' && app.ccRemark ? 'bg-red-400' : 'bg-gray-200')}"></span>
-                    <span class="text-[10px] font-bold text-gray-400 uppercase">CC</span>
-                </div>
-                <span class="text-gray-200">→</span>
-                <div class="flex items-center gap-1">
-                    <span class="w-2.5 h-2.5 rounded-full ${app.hod === 1 ? 'bg-green-500' : (app.status === 'denied' && app.hodRemark ? 'bg-red-400' : 'bg-gray-200')}"></span>
-                    <span class="text-[10px] font-bold text-gray-400 uppercase">HOD</span>
-                </div>
-                <span class="text-gray-200">→</span>
-                <div class="flex items-center gap-1">
-                    <span class="w-2.5 h-2.5 rounded-full ${app.incharge === 1 ? 'bg-green-500' : (app.status === 'denied' && app.inchargeRemark ? 'bg-red-400' : 'bg-gray-200')}"></span>
-                    <span class="text-[10px] font-bold text-gray-400 uppercase">Incharge</span>
-                </div>
-            </div>`;
-
-        const remarkSection = app.status === 'denied' && (app.ccRemark || app.hodRemark || app.inchargeRemark)
-            ? `<div class="mt-3 bg-red-50 border border-red-100 rounded-xl p-3">
-                   <p class="text-[10px] font-black text-red-400 uppercase mb-1">Rejection Reason</p>
-                   <p class="text-sm text-red-700 font-medium">${app.ccRemark || app.hodRemark || app.inchargeRemark}</p>
-               </div>`
-            : '';
-
-        const odBtn = app.status === 'approved'
-            ? `<button onclick="openODGenerator(${app.id})"
-                    class="mt-4 w-full bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-all flex items-center justify-center gap-2 shadow-md">
-                    <i class="fa-solid fa-file-arrow-down"></i> Download OD Letter
-               </button>`
-            : '';
-
-        const submittedAt = app.submittedAt
-            ? `<p class="text-[10px] text-gray-300 mt-0.5">Submitted: ${new Date(app.submittedAt).toLocaleString('en-GB')}</p>`
-            : '';
-
-        item.innerHTML = `
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div class="flex-1">
-                    <p class="font-bold text-gray-800">${app.event}</p>
-                    <p class="text-xs text-gray-400 font-bold mt-0.5">${app.from} → ${app.to}</p>
-                    ${submittedAt}
-                    ${dots}
-                    ${remarkSection}
-                    ${odBtn}
-                </div>
-                <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase ${sClass} self-start sm:self-center flex-shrink-0">${sLabel}</span>
-            </div>`;
-        list.appendChild(item);
-    });
-}
-
-// ═══════════════════════════════════════════════════════════════
-//  APPROVALS
-// ═══════════════════════════════════════════════════════════════
-function renderApprovals() {
-    const list = document.getElementById('approvals-list');
-    list.innerHTML = '';
-    const pending = db.applications.filter(app => {
-        if (app.status !== 'pending') return false;
-        if (currentUser.role !== 'incharge' && app.dept !== currentUser.dept) return false;
-        if (currentUser.role === 'cc'       && app.cc === 0) return true;
-        if (currentUser.role === 'hod'      && app.cc === 1 && app.hod === 0) return true;
-        if (currentUser.role === 'incharge' && app.hod === 1 && app.incharge === 0) return true;
-        return false;
-    });
-
-    if (pending.length === 0) {
-        list.innerHTML = '<div class="p-10 text-center text-gray-400 italic bg-white rounded-3xl border">No pending requests at this time.</div>';
-        return;
-    }
-
-    pending.forEach(app => {
-        const card = document.createElement('div');
-        card.className = "bg-white p-6 rounded-3xl border shadow-lg border-gray-100";
-        card.innerHTML = `
-            <h4 class="font-bold text-xl">${app.studentName}</h4>
-            <p class="text-xs text-gray-500 mb-1">${app.dept} | ${app.meta}</p>
-            <p class="text-xs text-gray-400 mb-4">Reg: ${app.regNo || 'N/A'} · Applied: ${app.submittedAt ? new Date(app.submittedAt).toLocaleDateString('en-GB') : '—'}</p>
-            <div class="bg-slate-50 p-4 rounded-xl mb-4 text-sm">
-                <p><strong>Event:</strong> ${app.event}</p>
-                <p><strong>Period:</strong> ${app.from} → ${app.to}</p>
-            </div>
-            <div class="mb-3">
-                <label class="form-label">Rejection Reason (required if rejecting)</label>
-                <input type="text" id="remark-${app.id}" placeholder="e.g., Dates conflict with exams" class="form-input-line mt-1">
-            </div>
-            <div class="flex gap-3">
-                <button onclick="processApp(${app.id}, 1)" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition">
-                    <i class="fa-solid fa-check mr-1"></i>Approve
-                </button>
-                <button onclick="processApp(${app.id}, 2)" class="flex-1 bg-red-50 text-red-600 py-3 rounded-xl font-bold hover:bg-red-100 transition border border-red-100">
-                    <i class="fa-solid fa-xmark mr-1"></i>Reject
-                </button>
-            </div>`;
-        list.appendChild(card);
-    });
-}
-
+// ═══════════════════════════════════════════════════════
+//  APPROVE / REJECT
+// ═══════════════════════════════════════════════════════
 async function processApp(id, result) {
-    const app = db.applications.find(a => a.id === id);
-    if (!app) return;
-    const remarkEl = document.getElementById(`remark-${id}`);
-    const remark = remarkEl ? remarkEl.value.trim() : '';
-
-    if (result === 2) {
-        if (!remark) {
-            toast("Please provide a rejection reason.", "error");
-            remarkEl && remarkEl.focus();
-            return;
-        }
-    }
-
-    // Disable buttons to prevent double-clicks
-    const card = remarkEl ? remarkEl.closest('.bg-white') : null;
-    if (card) {
-        card.querySelectorAll('button').forEach(b => b.disabled = true);
-        card.style.opacity = '0.6';
-    }
-
-    // Pull latest from GitHub before mutating
+    const re = document.getElementById(`remark-${id}`);
+    const remark = re ? re.value.trim() : '';
+    if (result===2 && !remark) { toast("Please provide a rejection reason.","error"); re&&re.focus(); return; }
+    const card = document.getElementById(`card-${id}`);
+    if (card) { card.querySelectorAll('button').forEach(b=>b.disabled=true); card.style.opacity='0.6'; }
+    showSync('syncing','Saving...');
     try {
-        const latest = await ghRead(FILE_APPS);
-        if (latest !== null) db.applications = latest;
-    } catch {}
-
-    const freshApp = db.applications.find(a => a.id === id);
-    if (!freshApp) { toast("Application not found.", "error"); return; }
-
-    if (result === 2) {
-        freshApp.status = 'denied';
-        if (currentUser.role === 'cc')       freshApp.ccRemark = remark;
-        else if (currentUser.role === 'hod') freshApp.hodRemark = remark;
-        else                                 freshApp.inchargeRemark = remark;
-    } else {
-        if (currentUser.role === 'cc')       freshApp.cc = 1;
-        else if (currentUser.role === 'hod') freshApp.hod = 1;
-        else if (currentUser.role === 'incharge') {
-            freshApp.incharge = 1;
-            freshApp.status = 'approved';
-        }
-    }
-    freshApp.lastUpdated = new Date().toISOString();
-
-    try {
-        const action = result === 2 ? 'reject' : 'approve';
-        await saveApps(`${action}: ${currentUser.role} action on app ${id}`);
-
-        if (result === 2) {
-            toast("Application rejected.", "error");
-        } else if (freshApp.status === 'approved') {
-            toast("Fully approved! OD letter unlocked for student.", "success");
+        const snap = await FB.get(FB.ref(FB.db,`applications/${id}`));
+        if (!snap.exists()) { toast("Not found.","error"); return; }
+        const updates = { lastUpdated: Date.now() };
+        if (result===2) {
+            updates.status = 'denied';
+            if (currentUser.role==='cc')       updates.ccRemark = remark;
+            else if (currentUser.role==='hod') updates.hodRemark = remark;
+            else                               updates.inchargeRemark = remark;
         } else {
-            toast("Approved ✓ — passed to next stage.", "success");
+            if (currentUser.role==='cc')       updates.cc = 1;
+            else if (currentUser.role==='hod') updates.hod = 1;
+            else if (currentUser.role==='incharge') { updates.incharge=1; updates.status='approved'; }
         }
-        renderApprovals();
-    } catch (err) {
-        toast("Failed to save approval. Please retry.", "error");
-        if (card) { card.querySelectorAll('button').forEach(b => b.disabled = false); card.style.opacity = '1'; }
+        await FB.update(FB.ref(FB.db,`applications/${id}`), updates);
+        showSync('synced','Saved ✓'); hideSync(2500);
+        if (result===2) toast("Application rejected.","error");
+        else if (updates.status==='approved') toast("Fully approved! OD letter unlocked 🎉","success");
+        else toast("Approved ✓ — passed to next stage.","success");
+    } catch(err) {
+        showSync('error','Failed'); hideSync(3000);
+        toast("Error: "+err.message,"error");
+        if (card) { card.querySelectorAll('button').forEach(b=>b.disabled=false); card.style.opacity='1'; }
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
-//  EVENTS
-// ═══════════════════════════════════════════════════════════════
-function renderEvents() {
-    const list = document.getElementById('events-list');
-    list.innerHTML = '';
-    if (!db.events.length) {
-        list.innerHTML = '<div class="col-span-2 text-center text-gray-400 p-8 bg-white rounded-2xl border">No events published yet.</div>';
-        return;
-    }
-    db.events.forEach(ev => {
-        const card = document.createElement('div');
-        card.className = "bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100";
-        card.innerHTML = `
-            <img src="${ev.img}" class="h-32 w-full object-cover" onerror="this.src='https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&q=80'">
-            <div class="p-4">
-                <h4 class="font-bold text-gray-800">${ev.title}</h4>
-                <p class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-location-dot"></i> ${ev.loc}</p>
-            </div>`;
-        list.appendChild(card);
-    });
-}
-
-function renderManageEvents() {
-    const list = document.getElementById('manage-events-list');
-    if (!list) return;
-    list.innerHTML = '';
-    if (!db.events.length) {
-        list.innerHTML = '<div class="text-center text-gray-400 p-6 bg-white rounded-2xl border">No events yet.</div>';
-        return;
-    }
-    db.events.forEach(ev => {
-        const item = document.createElement('div');
-        item.className = "bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between gap-4";
-        item.innerHTML = `
-            <div class="flex items-center gap-3 flex-1 min-w-0">
-                <img src="${ev.img}" class="w-12 h-12 rounded-xl object-cover flex-shrink-0" onerror="this.src='https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=400&q=60'">
-                <div class="min-w-0">
-                    <p class="font-bold text-sm text-gray-800 truncate">${ev.title}</p>
-                    <p class="text-xs text-gray-400">${ev.loc}</p>
-                </div>
-            </div>
-            <button onclick="deleteEvent(${ev.id})" class="flex-shrink-0 text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-xl transition-all">
-                <i class="fa-solid fa-trash text-sm"></i>
-            </button>`;
-        list.appendChild(item);
-    });
-}
-
-document.getElementById('event-form').addEventListener('submit', async (e) => {
+// ═══════════════════════════════════════════════════════
+//  EVENTS CRUD
+// ═══════════════════════════════════════════════════════
+document.getElementById('event-form').addEventListener('submit', async e => {
     e.preventDefault();
     const btn = document.getElementById('publish-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publishing...';
-
-    // Pull latest first
+    btn.disabled=true; btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Publishing...';
+    showSync('syncing','Publishing...');
     try {
-        const latest = await ghRead(FILE_EVENTS);
-        if (latest !== null) db.events = latest;
-    } catch {}
-
-    const newEv = {
-        id: Date.now(),
-        title: document.getElementById('new-title').value,
-        loc:   document.getElementById('new-loc').value,
-        img:   document.getElementById('new-img').value || 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&q=80'
-    };
-    db.events.unshift(newEv);
-
-    try {
-        await saveEvents(`publish: new event "${newEv.title}"`);
-        toast("Event published!", "success");
+        const nr = FB.push(FB.ref(FB.db,'events'));
+        await FB.set(nr, {
+            id: nr.key,
+            title: document.getElementById('new-title').value,
+            loc:   document.getElementById('new-loc').value,
+            img:   document.getElementById('new-img').value ||
+                   'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800&q=80'
+        });
+        showSync('synced','Published ✓'); hideSync(2500);
+        toast("Event published!","success");
         e.target.reset();
-        renderManageEvents();
-        renderEvents();
-    } catch {
-        db.events.shift();
-        toast("Failed to publish event.", "error");
+    } catch(err) {
+        showSync('error','Failed'); hideSync(3000);
+        toast("Failed: "+err.message,"error");
     } finally {
-        btn.disabled = false;
-        btn.innerHTML = 'Publish Event';
+        btn.disabled=false; btn.innerHTML='Publish Event';
     }
 });
 
 async function deleteEvent(id) {
     if (!confirm("Delete this event?")) return;
-
+    showSync('syncing','Deleting...');
     try {
-        const latest = await ghRead(FILE_EVENTS);
-        if (latest !== null) db.events = latest;
-    } catch {}
-
-    db.events = db.events.filter(e => e.id !== id);
-
-    try {
-        await saveEvents(`delete: removed event ${id}`);
-        toast("Event deleted.", "info");
-        renderManageEvents();
-        renderEvents();
-    } catch {
-        toast("Failed to delete event.", "error");
+        await FB.remove(FB.ref(FB.db,`events/${id}`));
+        showSync('synced','Deleted ✓'); hideSync(2000);
+        toast("Event deleted.","info");
+    } catch(err) {
+        showSync('error','Failed'); hideSync(3000);
+        toast("Delete failed: "+err.message,"error");
     }
 }
 
-// ═══════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 //  OD GENERATOR
-// ═══════════════════════════════════════════════════════════════
-let activeODApp = null;
-let base64Logo = "";
+// ═══════════════════════════════════════════════════════
+let activeODApp=null, base64Logo="";
 
 async function openODGenerator(appId) {
-    // Refresh to get latest app state
+    showLoading("Preparing OD letter...");
     try {
-        const latest = await ghRead(FILE_APPS);
-        if (latest !== null) db.applications = latest;
-    } catch {}
-
-    const app = db.applications.find(a => a.id === appId);
-    if (!app || app.status !== 'approved') return;
-    activeODApp = app;
-
-    if (!base64Logo) base64Logo = await preloadLogo();
-    renderODLetter();
-    showSection('od-gen');
+        const snap = await FB.get(FB.ref(FB.db,`applications/${appId}`));
+        if (!snap.exists()||snap.val().status!=='approved') { hideLoading(); toast("Not approved.","error"); return; }
+        activeODApp = snap.val();
+        if (!base64Logo) base64Logo = await preloadLogo();
+        hideLoading(); renderODLetter(); showSection('od-gen');
+    } catch(err) { hideLoading(); toast("Error: "+err.message,"error"); }
 }
 
 async function preloadLogo() {
-    const LOGO_SRC = "https://github.com/MohammedSulthan07/chatbot-for-health/raw/main/IMG-20260304-WA0029.jpg";
+    const src="https://raw.githubusercontent.com/MohammedSulthan07/chatbot-for-health/main/IMG-20260304-WA0029.jpg";
     try {
-        const response = await fetch(LOGO_SRC);
-        const blob = await response.blob();
-        return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(blob);
-        });
-    } catch {
-        return LOGO_SRC;
-    }
+        const b = await (await fetch(src)).blob();
+        return new Promise(res => { const r=new FileReader(); r.onloadend=()=>res(r.result); r.readAsDataURL(b); });
+    } catch { return src; }
 }
 
 function getODHTML(app) {
-    const fmt = (d) => d ? new Date(d).toLocaleDateString('en-GB') : '—';
-    const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
-    const timestamp = new Date().toLocaleString('en-GB', { hour12: false });
-    const ref = `SIPH/OD/2026/${app.regNo ? app.regNo.slice(-4) : app.id.toString().slice(-4)}`;
-
+    const fmt = d => d?new Date(d).toLocaleDateString('en-GB'):'—';
+    const today = new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+    const ts    = new Date().toLocaleString('en-GB',{hour12:false});
+    const ref   = `SIPH/OD/2026/${app.regNo?app.regNo.slice(-4):String(app.id).slice(-4)}`;
     return `
         <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid #1e3a8a;padding-bottom:1.5rem;margin-bottom:2.5rem;">
             <img src="${base64Logo}" style="height:96px;width:auto;object-fit:contain;">
@@ -1201,45 +883,32 @@ function getODHTML(app) {
                 <p style="font-size:0.75rem;font-weight:700;color:#2563eb;letter-spacing:0.1em;text-transform:uppercase;margin:4px 0 0;">SIPH Research & Development</p>
             </div>
         </div>
-
         <div style="display:flex;justify-content:space-between;margin-bottom:2rem;font-weight:700;font-size:0.875rem;">
-            <p style="margin:0;">Ref: ${ref}</p>
-            <p style="margin:0;">Date: ${today}</p>
+            <p style="margin:0;">Ref: ${ref}</p><p style="margin:0;">Date: ${today}</p>
         </div>
-
         <div style="margin-bottom:2rem;font-size:1rem;line-height:1.7;">
             <p style="margin:0;font-weight:700;">To,</p>
             <p style="margin:0;">The Head of the Department,</p>
             <p style="margin:0;font-weight:700;color:#1e3a8a;text-transform:uppercase;">${app.dept}</p>
             <p style="margin:0;">SIPH Campus Office.</p>
         </div>
-
         <div style="margin-bottom:2.5rem;text-align:center;border-top:2px solid #f1f5f9;border-bottom:2px solid #f1f5f9;padding:0.75rem 0;">
             <p style="margin:0;font-weight:700;font-size:1rem;font-style:italic;text-decoration:underline;text-underline-offset:4px;">
-                Subject: Requesting Permission for On-Duty (OD) – ${app.event}
-            </p>
+                Subject: Requesting Permission for On-Duty (OD) – ${app.event}</p>
         </div>
-
         <div style="font-size:1rem;line-height:1.9;text-align:justify;flex-grow:1;">
             <p style="margin:0 0 1rem;">Respected Sir/Madam,</p>
-            <p style="margin:0 0 1rem;">
-                I, <strong style="color:#1e3a8a;text-transform:uppercase;border-bottom:1px solid #bfdbfe;">${app.studentName}</strong>,
-                bearing Register Number <strong>${app.regNo || '—'}</strong>, a student of
-                <strong>${app.meta ? app.meta.split('/')[0].trim() + ' Year' : '—'}</strong>
-                (Year/Sem/Sec: <strong>${app.meta || '—'}</strong>),
-                Department of <strong>${app.dept}</strong>, hereby submit this request for your kind approval.
-            </p>
-            <p style="margin:0 0 1rem;">
-                I am participating in the <strong>${app.event}</strong> event at SIPH.
-                In this connection, I kindly request you to grant me On-Duty (OD) permission
-                from <strong>${fmt(app.from)}</strong> to <strong>${fmt(app.to)}</strong>.
-            </p>
-            <p style="margin:0 0 1rem;">
-                I assure you that I will diligently complete any academic requirements or classes missed during this period.
-            </p>
+            <p style="margin:0 0 1rem;">I, <strong style="color:#1e3a8a;text-transform:uppercase;border-bottom:1px solid #bfdbfe;">${app.studentName}</strong>,
+            bearing Register Number <strong>${app.regNo||'—'}</strong>, a student of
+            <strong>${app.meta?app.meta.split('/')[0].trim()+' Year':'—'}</strong>
+            (Year/Sem/Sec: <strong>${app.meta||'—'}</strong>),
+            Department of <strong>${app.dept}</strong>, hereby submit this request for your kind approval.</p>
+            <p style="margin:0 0 1rem;">I am participating in the <strong>${app.event}</strong> event at SIPH.
+            In this connection, I kindly request you to grant me On-Duty (OD) permission
+            from <strong>${fmt(app.from)}</strong> to <strong>${fmt(app.to)}</strong>.</p>
+            <p style="margin:0 0 1rem;">I assure you that I will diligently complete any academic requirements or classes missed during this period.</p>
             <p style="margin:0;">Thanking you,</p>
         </div>
-
         <div style="display:flex;justify-content:space-between;margin-top:3rem;margin-bottom:2rem;">
             <div style="text-align:center;">
                 <div style="width:180px;border-bottom:2px solid black;margin-bottom:8px;height:40px;"></div>
@@ -1255,71 +924,46 @@ function getODHTML(app) {
                 <p style="margin:0;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:0.1em;color:#6b7280;">HOD Approval</p>
             </div>
         </div>
-
         <div style="border-top:2px solid #f1f5f9;padding-top:1rem;display:flex;justify-content:space-between;align-items:flex-end;">
             <p style="margin:0;font-size:9px;font-weight:900;color:#d1d5db;text-transform:uppercase;letter-spacing:0.1em;">SIPH Official Document</p>
             <div style="text-align:right;">
                 <p style="margin:0;font-size:9px;font-weight:700;color:#9ca3af;text-transform:uppercase;">System Generated · All Approvals Verified</p>
-                <p style="margin:2px 0 0;font-size:10px;font-family:monospace;color:#6b7280;">${timestamp}</p>
+                <p style="margin:2px 0 0;font-size:10px;font-family:monospace;color:#6b7280;">${ts}</p>
             </div>
         </div>`;
 }
 
 function renderODLetter() {
     if (!activeODApp) return;
-    const html = getODHTML(activeODApp);
-    document.getElementById('od-preview-frame').innerHTML = html;
-    document.getElementById('od-capture-frame').innerHTML = html;
+    const h = getODHTML(activeODApp);
+    document.getElementById('od-preview-frame').innerHTML = h;
+    document.getElementById('od-capture-frame').innerHTML = h;
 }
 
 async function downloadODpng() {
     if (!activeODApp) return;
     const btn = document.getElementById('od-png-btn');
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
-    btn.disabled = true;
-
+    btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Generating...'; btn.disabled=true;
     if (!base64Logo) base64Logo = await preloadLogo();
     renderODLetter();
-
     try {
-        const canvas = await html2canvas(document.getElementById('od-capture-frame'), {
-            scale: 3,
-            useCORS: true,
-            backgroundColor: "#ffffff",
-            width: 794,
-            height: 1123
-        });
-        const link = document.createElement('a');
-        link.download = `OD_${activeODApp.regNo || activeODApp.studentName.replace(/\s+/g,'_')}.png`;
-        link.href = canvas.toDataURL('image/png', 1.0);
-        link.click();
-        toast("OD Letter downloaded!", "success");
-    } catch (err) {
-        toast("PNG failed. Try 'Save as PDF' instead.", "error");
-    } finally {
-        btn.innerHTML = '<i class="fa-solid fa-image"></i> Download as PNG';
-        btn.disabled = false;
-    }
+        const canvas = await html2canvas(document.getElementById('od-capture-frame'),
+            { scale:3, useCORS:true, backgroundColor:"#ffffff", width:794, height:1123 });
+        const a = document.createElement('a');
+        a.download = `OD_${activeODApp.regNo||activeODApp.studentName.replace(/\s+/g,'_')}.png`;
+        a.href = canvas.toDataURL('image/png',1.0); a.click();
+        toast("OD Letter downloaded!","success");
+    } catch { toast("PNG failed. Try 'Save as PDF'.","error"); }
+    finally { btn.innerHTML='<i class="fa-solid fa-image"></i> Download as PNG'; btn.disabled=false; }
 }
 
 function printOD() {
     if (!activeODApp) return;
-    const printTarget = document.getElementById('od-print-target');
-    printTarget.innerHTML = document.getElementById('od-capture-frame').innerHTML;
-    printTarget.style.display = 'block';
-    window.print();
-    setTimeout(() => { printTarget.style.display = 'none'; }, 1000);
+    const pt = document.getElementById('od-print-target');
+    pt.innerHTML = document.getElementById('od-capture-frame').innerHTML;
+    pt.style.display='block'; window.print();
+    setTimeout(()=>{ pt.style.display='none'; },1000);
 }
-
-// ═══════════════════════════════════════════════════════════════
-//  BOOT
-// ═══════════════════════════════════════════════════════════════
-(async () => {
-    const ok = await loadDB();
-    if (ok) {
-        document.getElementById('auth-view').classList.remove('hidden-section');
-    }
-})();
 </script>
 </body>
 </html>
